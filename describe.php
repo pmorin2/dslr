@@ -1,30 +1,6 @@
 <?php
-function csv_to_array($filename='', $delimiter=',')
-{
-  if(!file_exists($filename) || !is_readable($filename))
-    return FALSE;
-
-  $data = array();
-  $header = NULL;
-  if (($data = file_get_contents($filename)) !== FALSE) {
-    if (($data = str_getcsv($data, "\n")) !== FALSE) {
-      foreach($data as &$line) {
-
-        if(!$header) {
-          $header = str_getcsv($line, $delimiter);
-        }
-        else
-          $line = array_combine($header, str_getcsv($line, $delimiter));
-      }
-    }
-  }
-  if(isset($data[0]))
-    unset($data[0]);
-  $data = (array_values($data));
-//  print_r($data);
-//  print_r($header);
-  return $data;
-}
+include 'csv_to_array.php';
+include 'array_minmax_val_key.php';
 
 function ft_count_feature($array, $feature)
 {
@@ -62,18 +38,7 @@ function ft_std_feature($array, $feature)
 
 function ft_minmax_feature($m , $array, $feature)
 {
-
-  $minmax = NULL;
-  foreach ($array as $line) {
-    if ($line[$feature]) {
-      if ($minmax === NULL) {
-        $minmax = (float)$line[$feature];
-      }
-      elseif(($m === "min" && (float)$line[$feature] < $minmax) || ($m === "max" && (float)$line[$feature] > $minmax)) {
-        $minmax = (float)$line[$feature];
-      }
-    }
-  }
+  $minmax = array_minmax_val_key($m , $array, $feature);
   return number_format($minmax, 6, '.', '');
 }
 
@@ -92,6 +57,23 @@ function ft_quartile_feature($Q, $array, $feature)
   return number_format((float)$tmpArray[$index], 6, '.', '');
 }
 
+function ft_median_feature($array, $feature)
+{
+  $tmpArray = array();
+  $index = 0.5 * (ft_count_feature($array, $feature) + 1);
+  foreach ($array as $line) {
+    $tmpArray[] = $line[$feature];
+  }
+  sort($tmpArray);
+  if ($index - (int)$index) {
+    $value = 0.5 * ($tmpArray[(int)$index] +$tmpArray[(int)$index + 1]);
+  }
+  else {
+    $value = $tmpArray[(int)$index];
+  }
+  return number_format((float)$value, 6, '.', '');
+}
+
 function ft_variance_feature($array, $feature)
 {
   $sum = 0;
@@ -105,8 +87,7 @@ function ft_variance_feature($array, $feature)
   return number_format($result, 6, '.', '');
 }
 
-if ((isset($argc) && $argc === 2) || $_GET["csv"])
-{
+if ((isset($argc) && $argc === 2) || $_GET["csv"]) {
   if(isset($argc) && $argc === 2) {
     $data = csv_to_array($argv[1], ',');
   }
@@ -122,6 +103,7 @@ if ((isset($argc) && $argc === 2) || $_GET["csv"])
   printf($mask1, 'Std', ft_std_feature($data, $features[0]), ft_std_feature($data, $features[1]), ft_std_feature($data, $features[2]), ft_std_feature($data, $features[3]), ft_std_feature($data, $features[4]), ft_std_feature($data, $features[5]), ft_std_feature($data, $features[6]));
   printf($mask1, 'Min', ft_minmax_feature("min", $data, $features[0]), ft_minmax_feature("min", $data, $features[1]), ft_minmax_feature("min", $data, $features[2]), ft_minmax_feature("min", $data, $features[3]), ft_minmax_feature("min", $data, $features[4]), ft_minmax_feature("min", $data, $features[5]), ft_minmax_feature("min", $data, $features[6]));
   printf($mask1, '25%', ft_quartile_feature("Q1", $data, $features[0]), ft_quartile_feature("Q1", $data, $features[1]), ft_quartile_feature("Q1", $data, $features[2]), ft_quartile_feature("Q1", $data, $features[3]), ft_quartile_feature("Q1", $data, $features[4]), ft_quartile_feature("Q1", $data, $features[5]), ft_quartile_feature("Q1", $data, $features[6]));
+  printf($mask1, '50%', ft_median_feature($data, $features[0]), ft_median_feature($data, $features[1]), ft_median_feature($data, $features[2]), ft_median_feature($data, $features[3]), ft_median_feature($data, $features[4]), ft_median_feature($data, $features[5]), ft_median_feature($data, $features[6]));
   printf($mask1, '75%', ft_quartile_feature("Q3", $data, $features[0]), ft_quartile_feature("Q3", $data, $features[1]), ft_quartile_feature("Q3", $data, $features[2]), ft_quartile_feature("Q3", $data, $features[3]), ft_quartile_feature("Q3", $data, $features[4]), ft_quartile_feature("Q3", $data, $features[5]), ft_quartile_feature("Q3", $data, $features[6]));
   printf($mask1, 'Max', ft_minmax_feature("max", $data, $features[0]), ft_minmax_feature("max", $data, $features[1]), ft_minmax_feature("max", $data, $features[2]), ft_minmax_feature("max", $data, $features[3]), ft_minmax_feature("max", $data, $features[4]), ft_minmax_feature("max", $data, $features[5]), ft_minmax_feature("max", $data, $features[6]));
   printf($mask1, 'Range', ft_minmax_feature("max", $data, $features[0]) - ft_minmax_feature("min", $data, $features[0]), ft_minmax_feature("max", $data, $features[1]) - ft_minmax_feature("min", $data, $features[1]), ft_minmax_feature("max", $data, $features[2]) - ft_minmax_feature("min", $data, $features[2]), ft_minmax_feature("max", $data, $features[3]) - ft_minmax_feature("min", $data, $features[3]), ft_minmax_feature("max", $data, $features[4]) - ft_minmax_feature("min", $data, $features[4]), ft_minmax_feature("max", $data, $features[5]) - ft_minmax_feature("min", $data, $features[5]), ft_minmax_feature("max", $data, $features[6]) - ft_minmax_feature("min", $data, $features[6]));
@@ -133,6 +115,7 @@ if ((isset($argc) && $argc === 2) || $_GET["csv"])
   printf($mask2, 'Std', ft_std_feature($data, $features[7]), ft_std_feature($data, $features[8]), ft_std_feature($data, $features[9]), ft_std_feature($data, $features[10]), ft_std_feature($data, $features[11]), ft_std_feature($data, $features[12]));
   printf($mask2, 'Min', ft_minmax_feature("min", $data, $features[7]), ft_minmax_feature("min", $data, $features[8]), ft_minmax_feature("min", $data, $features[9]), ft_minmax_feature("min", $data, $features[10]), ft_minmax_feature("min", $data, $features[11]), ft_minmax_feature("min", $data, $features[12]));
   printf($mask2, '25%', ft_quartile_feature("Q1", $data, $features[7]), ft_quartile_feature("Q1", $data, $features[8]), ft_quartile_feature("Q1", $data, $features[9]), ft_quartile_feature("Q1", $data, $features[10]), ft_quartile_feature("Q1", $data, $features[11]), ft_quartile_feature("Q1", $data, $features[12]));
+  printf($mask2, '50%', ft_median_feature($data, $features[7]), ft_median_feature($data, $features[8]), ft_median_feature($data, $features[9]), ft_median_feature($data, $features[10]), ft_median_feature($data, $features[11]), ft_median_feature($data, $features[12]));
   printf($mask2, '75%', ft_quartile_feature("Q3", $data, $features[7]), ft_quartile_feature("Q3", $data, $features[8]), ft_quartile_feature("Q3", $data, $features[9]), ft_quartile_feature("Q3", $data, $features[10]), ft_quartile_feature("Q3", $data, $features[11]), ft_quartile_feature("Q3", $data, $features[12]));
   printf($mask2, 'Max', ft_minmax_feature("max", $data, $features[7]), ft_minmax_feature("max", $data, $features[8]), ft_minmax_feature("max", $data, $features[9]), ft_minmax_feature("max", $data, $features[10]), ft_minmax_feature("max", $data, $features[11]), ft_minmax_feature("max", $data, $features[12]));
   printf($mask2, 'Range', ft_minmax_feature("max", $data, $features[7]) - ft_minmax_feature("min", $data, $features[7]), ft_minmax_feature("max", $data, $features[8]) - ft_minmax_feature("min", $data, $features[8]), ft_minmax_feature("max", $data, $features[9]) - ft_minmax_feature("min", $data, $features[9]), ft_minmax_feature("max", $data, $features[10]) - ft_minmax_feature("min", $data, $features[10]), ft_minmax_feature("max", $data, $features[11]) - ft_minmax_feature("min", $data, $features[11]), ft_minmax_feature("max", $data, $features[12]) - ft_minmax_feature("min", $data, $features[12]));
