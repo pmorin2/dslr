@@ -1,6 +1,6 @@
 <?php
-include 'csv_to_array.php';
-include 'array_minmax_val_key.php';
+include 'phpHelp/csv_to_array.php';
+include 'phpHelp/array_minmax_val_key.php';
 
 function ft_count_feature($array, $feature)
 {

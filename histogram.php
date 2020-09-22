@@ -1,8 +1,8 @@
 <?php
-include 'csv_to_array.php';
-include 'array_sort_val_key.php';
-include 'array_count_val_key.php';
-include 'array_minmax_val_key.php';
+include 'phpHelp/csv_to_array.php';
+include 'phpHelp/array_sort_val_key.php';
+include 'phpHelp/array_count_val_key.php';
+include 'phpHelp/array_minmax_val_key.php';
 
 if ((isset($argc) && $argc === 2) || isset($_GET["csv"])) {
   if (isset($argc) && $argc === 2) {
@@ -96,6 +96,7 @@ $dataPoints1 = array(
           var chart = new CanvasJS.Chart("chartContainer", {
               animationEnabled: true,
               theme: "light2",
+              dataPointWidth: 30,
               title:{
                   text: "<?php echo $title; ?>",
                   fontSize: 33,
