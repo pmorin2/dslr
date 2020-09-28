@@ -1,4 +1,4 @@
-from pythonHelp.preprocessing import StandardScaler
+from pythonHelp.set_data import StandardScaler
 from pythonHelp.model import LogisticRegression
 
 from sklearn.metrics import accuracy_score

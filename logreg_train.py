@@ -1,4 +1,4 @@
-from pythonHelp.preprocessing import StandardScaler, train_test_split
+from pythonHelp.set_data import StandardScaler, train_test_split
 from pythonHelp.model import LogisticRegression
 
 from sklearn.metrics import accuracy_score
@@ -34,7 +34,7 @@ if __name__ == '__main__':
   X_train_std = sc.transform(X_train)
   X_test_std = sc.transform(X_test)
 
-  lr = LogisticRegression(eta=0.01, max_iter=1000, Lambda=10)
+  lr = LogisticRegression(eta=0.01, max_iter=500, Lambda=10)
   lr.big_formula(X_train_std, y_train)
 
   if (args.graph):
